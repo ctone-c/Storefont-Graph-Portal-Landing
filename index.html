@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Storefront Graph Portal &#8211; Volvo Cars</title>
+
+    <!-- Prevent flash of wrong theme before CSS loads -->
+    <script>
+      (function() {
+        var saved = localStorage.getItem('vcc-theme');
+        var preferred = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-color-mode', preferred);
+      })();
+    </script>
+
+    <!-- Volvo Cars Design System -->
+    <link rel="stylesheet" href="node_modules/@volvo-cars/css/dist/css/v1/font-face.8324f4d8.css" />
+    <link rel="stylesheet" href="node_modules/@volvo-cars/css/dist/css/v1/tokens.40dcfb84.css" />
+    <link rel="stylesheet" href="node_modules/@volvo-cars/css/dist/css/v1/styles.41f0a1db.css" />
+    <link rel="stylesheet" media="(hover: hover)" href="node_modules/@volvo-cars/css/dist/css/v1/styles_hover.13f2c48a.css" />
+    <link rel="stylesheet" media="(min-width: 520px)" href="node_modules/@volvo-cars/css/dist/css/v1/styles_md.4971b914.css" />
+    <link rel="stylesheet" media="(min-width: 1024px)" href="node_modules/@volvo-cars/css/dist/css/v1/styles_xl.a877db6a.css" />
+
+    <style>
+      /* Theme toggle button */
+      #theme-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: var(--v-radius-full);
+        border: 1px solid var(--v-color-ornament-primary);
+        background: none;
+        cursor: pointer;
+        color: var(--v-color-foreground-primary);
+        transition: border-color var(--v-transition-default), background-color var(--v-transition-default);
+        flex-shrink: 0;
+      }
+      #theme-toggle:hover {
+        border-color: var(--v-color-foreground-primary);
+        background-color: var(--v-color-background-secondary);
+      }
+      #theme-toggle svg { display: block; }
+      /* Show correct icon per mode */
+      #theme-toggle .icon-sun  { display: none; }
+      #theme-toggle .icon-moon { display: block; }
+      [data-color-mode="dark"] #theme-toggle .icon-sun  { display: block; }
+      [data-color-mode="dark"] #theme-toggle .icon-moon { display: none; }
+
+      /* Header */
+      .site-header {
+        position: sticky; top: 0; z-index: 100;
+        background-color: var(--v-color-background-primary);
+        border-bottom: 1px solid var(--v-color-ornament-primary);
+      }
+      .site-header-inner {
+        display: flex; align-items: center;
+        justify-content: space-between;
+        padding-block: var(--v-space-20);
+      }
+      .site-header-nav {
+        display: flex; align-items: center;
+        gap: var(--v-space-24); list-style: none; padding: 0; margin: 0;
+      }
+
+      /* Hero */
+      .hero-section {
+        padding-block: 120px;
+        border-bottom: 1px solid var(--v-color-ornament-primary);
+      }
+      .hero-section .title-page {
+        grid-template-columns: 1fr;
+        grid-template-areas: "icon" "heading" "description" "action";
+        justify-items: center;
+        text-align: center;
+        row-gap: 0;
+      }
+      .hero-icon {
+        grid-area: icon;
+        width: 120px;
+        height: 120px;
+        border-radius: var(--v-radius-md);
+        display: block;
+        margin-bottom: var(--v-space-24);
+      }
+      .hero-section .title-page [slot=heading] {
+        margin-bottom: var(--v-space-24);
+        font-size: 72px;
+        line-height: 1.1;
+      }
+      .hero-description {
+        color: var(--v-color-foreground-secondary);
+        max-width: 56ch;
+      }
+      .hero-description p + p {
+        margin-top: var(--v-space-12);
+      }
+
+      /* Sections */
+      .page-section {
+        padding-block: var(--v-space-64);
+        border-bottom: 1px solid var(--v-color-ornament-primary);
+      }
+      .section-heading { margin-bottom: var(--v-space-32); }
+
+      /* Callout */
+      .callout {
+        padding: var(--v-space-24);
+        background-color: var(--v-color-background-secondary);
+        border-radius: var(--v-shape-default);
+      }
+      .callout-note {
+        margin-top: var(--v-space-16);
+        font-size: var(--v-font-14-size);
+        line-height: var(--v-font-14-lineheight);
+        color: var(--v-color-foreground-secondary);
+        font-style: italic;
+      }
+
+      /* Quick-action cards */
+      .cards-grid {
+        list-style: none; padding: 0; margin: 0;
+        display: grid; grid-template-columns: 1fr; gap: var(--v-space-16);
+      }
+      @media (min-width: 520px)  { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (min-width: 1024px) { .cards-grid { grid-template-columns: repeat(4, 1fr); } }
+      .card-thumb {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        object-fit: cover;
+        border-radius: var(--v-radius-sm);
+        margin-bottom: var(--v-space-16);
+      }
+
+      /* Steps */
+      .steps-list {
+        list-style: none; padding: 0; margin: 0;
+        display: flex; flex-direction: column; gap: var(--v-space-32);
+        counter-reset: steps;
+      }
+      .steps-list > li {
+        counter-increment: steps;
+        display: grid; grid-template-columns: 2rem 1fr;
+        gap: var(--v-space-16); align-items: start;
+      }
+      .steps-list > li::before {
+        content: counter(steps);
+        display: flex; align-items: center; justify-content: center;
+        width: 2rem; height: 2rem;
+        border-radius: var(--v-radius-full);
+        background-color: var(--v-color-surface-neutral);
+        color: var(--v-color-foreground-inverted);
+        font-size: var(--v-font-14-size);
+        font-weight: var(--v-font-emphasis-weight);
+        flex-shrink: 0; margin-top: 3px;
+      }
+      .step-label { font-weight: var(--v-font-emphasis-weight); margin-bottom: var(--v-space-12); }
+
+      /* Code */
+      .code-inline {
+        font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
+        font-size: .875em;
+        background-color: var(--v-color-background-secondary);
+        padding: 2px 6px; border-radius: var(--v-radius-sm);
+      }
+      .code-block {
+        background-color: var(--v-color-background-secondary);
+        border-radius: var(--v-shape-default);
+        padding: var(--v-space-16) var(--v-space-24);
+        overflow-x: auto; margin-top: var(--v-space-12);
+      }
+      .code-block pre {
+        margin: 0;
+        font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
+        font-size: var(--v-font-14-size); line-height: 1.7;
+        color: var(--v-color-foreground-primary); white-space: pre;
+      }
+      .code-tabs { margin-top: var(--v-space-16); }
+      .code-tabs-bar {
+        display: flex;
+        border-bottom: 1px solid var(--v-color-ornament-primary);
+      }
+      .code-tab-btn {
+        background: none; border: none;
+        border-bottom: 2px solid transparent;
+        padding: var(--v-space-8) var(--v-space-16);
+        font-family: inherit; font-size: var(--v-font-14-size);
+        line-height: var(--v-font-14-lineheight);
+        color: var(--v-color-foreground-secondary);
+        cursor: pointer; margin-bottom: -1px;
+        transition: color var(--v-transition-default), border-color var(--v-transition-default);
+      }
+      .code-tab-btn[aria-selected="true"] {
+        color: var(--v-color-foreground-primary);
+        border-bottom-color: var(--v-color-foreground-primary);
+        font-weight: var(--v-font-emphasis-weight);
+      }
+      .code-panel {
+        display: none;
+        background-color: var(--v-color-background-secondary);
+        border-radius: 0 0 var(--v-shape-default) var(--v-shape-default);
+        padding: var(--v-space-24); overflow-x: auto;
+      }
+      .code-panel[data-active] { display: block; }
+      .code-panel pre {
+        margin: 0;
+        font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
+        font-size: var(--v-font-14-size); line-height: 1.7;
+        color: var(--v-color-foreground-primary); white-space: pre;
+      }
+
+      /* Domains */
+      .domains-grid {
+        list-style: none; padding: 0; margin: 0;
+        display: grid; grid-template-columns: 1fr; gap: var(--v-space-16);
+      }
+      @media (min-width: 520px)  { .domains-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (min-width: 1024px) { .domains-grid { grid-template-columns: repeat(3, 1fr); } }
+      .domain-card {
+        padding: var(--v-space-24);
+        border: 1px solid var(--v-color-ornament-primary);
+        border-radius: var(--v-shape-default);
+        display: flex; flex-direction: column; gap: var(--v-space-8);
+        transition: border-color var(--v-transition-default);
+      }
+      .domain-card:hover { border-color: var(--v-color-foreground-primary); }
+      .domain-card-title { font-weight: var(--v-font-emphasis-weight); }
+
+      /* Footer */
+      .site-footer {
+        background-color: var(--v-color-background-secondary);
+        border-top: 1px solid var(--v-color-ornament-primary);
+        padding-block: var(--v-space-64);
+      }
+      .footer-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--v-space-48) var(--v-space-32);
+      }
+      @media (min-width: 1024px) { .footer-grid { grid-template-columns: repeat(4, 1fr); } }
+      .footer-col-label {
+        font-size: var(--v-font-12-size);
+        line-height: var(--v-font-12-lineheight);
+        letter-spacing: .08em; text-transform: uppercase;
+        font-weight: var(--v-font-emphasis-weight);
+        color: var(--v-color-foreground-secondary);
+        margin-bottom: var(--v-space-16);
+      }
+      .footer-links {
+        list-style: none; padding: 0; margin: 0;
+        display: flex; flex-direction: column; gap: var(--v-space-12);
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <header class="site-header">
+      <div class="container site-header-inner">
+        <a href="/" aria-label="Volvo Cars home"
+           style="display:inline-flex;align-items:center;text-decoration:none;">
+          <span class="wordmark"></span>
+        </a>
+        <nav aria-label="Main navigation">
+          <ul class="site-header-nav">
+            <li><a href="#quick-start" class="link-plain micro font-medium">Quick Start</a></li>
+            <li><a href="#domains"     class="link-plain micro font-medium">Domains</a></li>
+            <li>
+              <button id="theme-toggle" aria-label="Switch colour theme" title="Toggle light / dark mode">
+                <!-- Moon: visible in light mode → click to go dark -->
+                <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     aria-hidden="true">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+                <!-- Sun: visible in dark mode → click to go light -->
+                <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     aria-hidden="true">
+                  <circle cx="12" cy="12" r="5"/>
+                  <line x1="12" y1="1"  x2="12" y2="3"/>
+                  <line x1="12" y1="21" x2="12" y2="23"/>
+                  <line x1="4.22" y1="4.22"  x2="5.64" y2="5.64"/>
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                  <line x1="1"  y1="12" x2="3"  y2="12"/>
+                  <line x1="21" y1="12" x2="23" y2="12"/>
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+              </button>
+            </li>
+            <li>
+              <a href="https://explorer.volvocars.biz/"
+                 class="button-filled" data-size="small">Open Explorer</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+
+      <!-- HERO -->
+      <section class="hero-section" aria-labelledby="hero-heading">
+        <div class="container-md">
+          <div class="title-page">
+            <img src="storefront-graph-apple-touch-icon.png" alt="Storefront Graph" class="hero-icon" />
+            <h1 id="hero-heading" slot="heading">Storefront Graph Portal</h1>
+            <div slot="description" class="hero-description">
+              <p>
+                <strong>Storefront Graph</strong> (formerly <strong>Federated Graph</strong>) is
+                Volvo Cars&#8217; GraphQL API data source for building great customer and retailer
+                experiences. It provides a single entry point to discover data, explore types and
+                queries, and run live examples.
+              </p>
+              <p>
+                Products (including cars) and Product Offers are represented in the commercial
+                context, as seen on
+                <a href="https://www.volvocars.com" class="link-inline">volvocars.com</a>,
+                including prices and taxes, technical data, rendered images, and much more.
+              </p>
+            </div>
+            <div slot="action" style="margin-top:var(--v-space-32);">
+              <div class="button-group" style="justify-content:center;flex-wrap:nowrap;">
+                <a href="https://explorer.volvocars.biz/" class="button-filled">Open the Explorer</a>
+                <a href="#quick-start"                    class="button-outlined">Quick Start</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- QUICK-ACTION CARDS -->
+      <section class="page-section" aria-label="Quick links">
+        <div class="container">
+          <ul class="cards-grid" role="list">
+
+            <li class="text-card">
+              <img src="storefront_placeholder.png" alt="" class="card-thumb" slot="image" />
+              <h2 slot="title">Explore queries</h2>
+              <p slot="subtitle">Browse the schema and run queries for quick iteration on features.</p>
+              <div slot="action">
+                <a href="https://explorer.volvocars.biz/" class="button-text">Open the Explorer</a>
+              </div>
+            </li>
+
+            <li class="text-card">
+              <img src="storefront_placeholder.png" alt="" class="card-thumb" slot="image" />
+              <h2 slot="title">Read the docs</h2>
+              <p slot="subtitle">Get started, learn core concepts, and follow examples across data domains.</p>
+              <div slot="action">
+                <a href="https://explorer.volvocars.biz/" class="button-text">Go to documentation</a>
+              </div>
+            </li>
+
+            <li class="text-card">
+              <img src="storefront_placeholder.png" alt="" class="card-thumb" slot="image" />
+              <h2 slot="title">Register your client</h2>
+              <p slot="subtitle">You must register your application before you can make requests.</p>
+              <div slot="action">
+                <a href="https://explorer.volvocars.biz/" class="button-text">Client registry</a>
+              </div>
+            </li>
+
+            <li class="text-card">
+              <img src="storefront_placeholder.png" alt="" class="card-thumb" slot="image" />
+              <h2 slot="title">Try live examples</h2>
+              <p slot="subtitle">See working queries for common use-cases.</p>
+              <div slot="action">
+                <a href="https://explorer.volvocars.biz/" class="button-text">Browse examples</a>
+              </div>
+            </li>
+
+          </ul>
+        </div>
+      </section>
+
+      <!-- QUICK START -->
+      <section class="page-section" id="quick-start" aria-labelledby="quickstart-heading">
+        <div class="container-md">
+          <div class="title-section section-heading">
+            <h2 id="quickstart-heading" slot="heading">Quick Start</h2>
+          </div>
+
+          <ol class="steps-list">
+
+            <li>
+              <div>
+                <p class="step-label">Build your query in the Explorer</p>
+                <a href="https://explorer.volvocars.biz/"
+                   class="button-outlined" data-size="small">Open Explorer</a>
+              </div>
+            </li>
+
+            <li>
+              <div>
+                <p class="step-label">Register your client and copy the required headers</p>
+                <div class="code-block">
+                  <pre>federated-graph-client-name: my-client
+federated-graph-client-key: &lt;my client key&gt;</pre>
+                </div>
+                <div style="margin-top:var(--v-space-16);">
+                  <a href="https://explorer.volvocars.biz/"
+                     class="button-text" data-size="small">Go to Client Registry</a>
+                </div>
+              </div>
+            </li>
+
+            <li>
+              <div>
+                <p class="step-label">Send the query to the Storefront Graph endpoint</p>
+                <p style="margin-top:var(--v-space-8);color:var(--v-color-foreground-secondary);font-size:var(--v-font-14-size);line-height:var(--v-font-14-lineheight);">
+                  Endpoint:
+                  <code class="code-inline">https://graph.volvocars.com/graphql</code>
+                </p>
+
+                <div class="code-tabs">
+                  <div class="code-tabs-bar" role="tablist" aria-label="Language examples">
+                    <button class="code-tab-btn" role="tab"
+                            aria-selected="true"  aria-controls="tab-js"
+                            id="btn-js"   onclick="selectTab('js')">JavaScript</button>
+                    <button class="code-tab-btn" role="tab"
+                            aria-selected="false" aria-controls="tab-curl"
+                            id="btn-curl" onclick="selectTab('curl')">cURL</button>
+                    <button class="code-tab-btn" role="tab"
+                            aria-selected="false" aria-controls="tab-java"
+                            id="btn-java" onclick="selectTab('java')">Java</button>
+                  </div>
+
+                  <div id="tab-js" role="tabpanel" aria-labelledby="btn-js"
+                       class="code-panel" data-active>
+<pre>const res = await fetch("https://graph.volvocars.com/graphql", {
+  method: "POST",
+  headers: {
+    "content-type": "application/json",
+    "federated-graph-client-name": "&lt;YOUR CLIENT NAME&gt;",
+    "federated-graph-client-key":  "&lt;YOUR CLIENT KEY&gt;"
+  },
+  body: JSON.stringify({ query: "&lt;YOUR QUERY AS TEXT&gt;" })
+});
+if (!res.ok) { /* handle errors */ }
+const data = await res.json();</pre>
+                  </div>
+
+                  <div id="tab-curl" role="tabpanel" aria-labelledby="btn-curl"
+                       class="code-panel">
+<pre>curl -X POST https://graph.volvocars.com/graphql \
+  -H "content-type: application/json" \
+  -H "federated-graph-client-name: &lt;YOUR CLIENT NAME&gt;" \
+  -H "federated-graph-client-key: &lt;YOUR CLIENT KEY&gt;" \
+  -d '{"query":"&lt;YOUR QUERY AS TEXT&gt;"}'</pre>
+                  </div>
+
+                  <div id="tab-java" role="tabpanel" aria-labelledby="btn-java"
+                       class="code-panel">
+<pre>HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create("https://graph.volvocars.com/graphql"))
+    .header("content-type", "application/json")
+    .header("federated-graph-client-name", "&lt;YOUR CLIENT NAME&gt;")
+    .header("federated-graph-client-key",  "&lt;YOUR CLIENT KEY&gt;")
+    .POST(HttpRequest.BodyPublishers.ofString(
+        "{\"query\":\"&lt;YOUR QUERY AS TEXT&gt;\"}"
+    ))
+    .build();
+HttpResponse&lt;String&gt; response =
+    client.send(request, HttpResponse.BodyHandlers.ofString());</pre>
+                  </div>
+                </div>
+
+              </div>
+            </li>
+
+          </ol>
+        </div>
+      </section>
+
+      <!-- NEED HELP -->
+      <section class="page-section" aria-labelledby="help-heading" data-color-mode="dark" style="background:#000;">
+        <div class="container-md">
+          <div class="title-section section-heading">
+            <h2 id="help-heading" slot="heading">Need help?</h2>
+          </div>
+          <div class="callout">
+            <ol class="list" style="padding-inline-start:1.5rem;">
+              <li>Reproduce the issue with a minimal query in the Explorer</li>
+              <li>Copy the link using the paper aeroplane icon &#9992;&#65039;</li>
+              <li>Submit an issue via Slack, Teams or email</li>
+            </ol>
+            <p class="callout-note">
+              Your request will be routed to the right team &#8211; either the domain team that
+              owns the data or the Federated Graph team for platform issues.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- DATA & DOMAINS -->
+      <section class="page-section" id="domains" aria-labelledby="domains-heading">
+        <div class="container">
+          <div class="title-section section-heading">
+            <h2 id="domains-heading" slot="heading">Data &amp; domains</h2>
+            <p slot="description">
+              The Storefront Graph uses Federated GraphQL architecture &#8212; one unified API,
+              with implementation and operational responsibility split across domain teams. You
+              query one endpoint; each domain team owns their schema fields and data.
+            </p>
+          </div>
+
+          <ul class="domains-grid" role="list">
+            <li class="domain-card">
+              <p class="domain-card-title">Products &amp; Offers</p>
+              <p style="color:var(--v-color-foreground-secondary);">List and search product offers, including Cars</p>
+            </li>
+            <li class="domain-card">
+              <p class="domain-card-title">Configuration</p>
+              <p style="color:var(--v-color-foreground-secondary);">Configure products</p>
+            </li>
+            <li class="domain-card">
+              <p class="domain-card-title">Enrichment</p>
+              <p style="color:var(--v-color-foreground-secondary);">Translated text, environmental &amp; technical data, rendered images, and more</p>
+            </li>
+            <li class="domain-card">
+              <p class="domain-card-title">Cart</p>
+              <p style="color:var(--v-color-foreground-secondary);">View prices and taxes</p>
+            </li>
+            <li class="domain-card">
+              <p class="domain-card-title">Volvo ID</p>
+              <p style="color:var(--v-color-foreground-secondary);">Account info</p>
+            </li>
+            <li class="domain-card">
+              <p class="domain-card-title">Fulfilment</p>
+              <p style="color:var(--v-color-foreground-secondary);">Lead times and fleet</p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-grid">
+
+          <div>
+            <p class="footer-col-label">Contact</p>
+            <ul class="footer-links">
+              <li><a href="#" class="link-plain">Slack</a></li>
+              <li><a href="#" class="link-plain">Teams</a></li>
+              <li><a href="#" class="link-plain">Email</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <p class="footer-col-label">Start</p>
+            <ul class="footer-links">
+              <li><a href="https://explorer.volvocars.biz/" class="link-plain">Client Registry</a></li>
+              <li><a href="https://explorer.volvocars.biz/" class="link-plain">Best practices</a></li>
+              <li><a href="https://explorer.volvocars.biz/" class="link-plain">Live examples</a></li>
+              <li><a href="#domains"                        class="link-plain">Data domains</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <p class="footer-col-label">Resources</p>
+            <ul class="footer-links">
+              <li><a href="https://explorer.volvocars.biz/" class="link-plain">Router dashboard (Grafana)</a></li>
+              <li><a href="https://explorer.volvocars.biz/" class="link-plain">Query metrics (Hive)</a></li>
+              <li><a href="https://graphql.org/learn/"      class="link-plain">Learn GraphQL</a></li>
+              <li><a href="https://graphql.org/community/tools-and-libraries/" class="link-plain">GraphQL clients</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <p class="footer-col-label">Contributors</p>
+            <ul class="footer-links">
+              <li><a href="#" class="link-plain">Contributors channel</a></li>
+              <li><a href="#" class="link-plain">Deployments</a></li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div style="margin-top:var(--v-space-48);padding-top:var(--v-space-24);
+                    border-top:1px solid var(--v-color-ornament-primary);
+                    display:flex;align-items:center;justify-content:space-between;
+                    flex-wrap:wrap;gap:var(--v-space-16);">
+          <a href="/" aria-label="Volvo Cars home"
+             style="display:inline-flex;align-items:center;text-decoration:none;">
+            <span class="wordmark"></span>
+          </a>
+          <p class="micro" style="color:var(--v-color-foreground-secondary);">
+            &#169; 2026 Volvo Car Corporation
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Theme toggle
+      (function() {
+        var btn = document.getElementById('theme-toggle');
+        function applyTheme(mode) {
+          document.documentElement.setAttribute('data-color-mode', mode);
+          localStorage.setItem('vcc-theme', mode);
+          btn.setAttribute('aria-label', mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+        }
+        btn.addEventListener('click', function() {
+          var current = document.documentElement.getAttribute('data-color-mode');
+          applyTheme(current === 'dark' ? 'light' : 'dark');
+        });
+        // Set initial aria-label
+        var initial = document.documentElement.getAttribute('data-color-mode') || 'light';
+        btn.setAttribute('aria-label', initial === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+      })();
+
+      function selectTab(id) {
+        document.querySelectorAll('.code-tab-btn').forEach(function(btn) {
+          btn.setAttribute('aria-selected', btn.id === 'btn-' + id ? 'true' : 'false');
+        });
+        document.querySelectorAll('.code-panel').forEach(function(panel) {
+          if (panel.id === 'tab-' + id) {
+            panel.setAttribute('data-active', '');
+          } else {
+            panel.removeAttribute('data-active');
+          }
+        });
+      }
+    </script>
+
+  </body>
+</html>
