@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Storefront Graph Portal &#8211; Volvo Cars</title>
+    <link rel="icon" type="image/svg+xml" href="Images/storefront-graph-favicon.svg" />
 
     <!-- Prevent flash of wrong theme before CSS loads -->
     <script>
@@ -58,11 +59,19 @@
       .site-header-inner {
         display: flex; align-items: center;
         justify-content: space-between;
-        padding-block: var(--v-space-20);
+        padding-block: var(--v-space-32);
       }
       .site-header-nav {
         display: flex; align-items: center;
         gap: var(--v-space-24); list-style: none; padding: 0; margin: 0;
+      }
+      .site-logotype {
+        height: 36px;
+        width: auto;
+        display: block;
+      }
+      [data-color-mode="dark"] .site-logotype {
+        content: url("Images/storefront-graph-logotype-white.svg");
       }
 
       /* Hero */
@@ -119,6 +128,18 @@
         font-style: italic;
       }
 
+      /* Scroll reveal */
+      .reveal {
+        opacity: 0;
+        transition: opacity 0.9s ease;
+      }
+      .reveal.reveal-left {
+        opacity: 0;
+      }
+      .reveal.reveal-visible {
+        opacity: 1;
+      }
+
       /* Quick-action cards */
       .cards-grid {
         list-style: none; padding: 0; margin: 0;
@@ -126,6 +147,17 @@
       }
       @media (min-width: 520px)  { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
       @media (min-width: 1024px) { .cards-grid { grid-template-columns: repeat(4, 1fr); } }
+      .cards-grid .text-card {
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+        cursor: pointer;
+      }
+      .cards-grid .text-card:hover {
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        transform: translateY(-4px);
+      }
+      [data-color-mode="dark"] .cards-grid .text-card:hover {
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      }
       .card-thumb {
         display: block;
         width: 100%;
@@ -133,6 +165,13 @@
         object-fit: cover;
         border-radius: var(--v-radius-sm);
         margin-bottom: var(--v-space-16);
+        transition: transform 0.2s ease, filter 0.3s ease;
+      }
+      [data-color-mode="dark"] .card-thumb {
+        filter: brightness(0.65) contrast(1.05);
+      }
+      .cards-grid .text-card:hover .card-thumb {
+        transform: scale(1.03);
       }
 
       /* Steps */
@@ -145,6 +184,11 @@
         counter-increment: steps;
         display: grid; grid-template-columns: 2rem 1fr;
         gap: var(--v-space-16); align-items: start;
+        opacity: 0;
+        transition: opacity 0.9s ease;
+      }
+      .steps-list > li.step-visible {
+        opacity: 1;
       }
       .steps-list > li::before {
         content: counter(steps);
@@ -216,6 +260,8 @@
       .domains-grid {
         list-style: none; padding: 0; margin: 0;
         display: grid; grid-template-columns: 1fr; gap: var(--v-space-16);
+        align-items: stretch;
+        margin-top: 80px;
       }
       @media (min-width: 520px)  { .domains-grid { grid-template-columns: repeat(2, 1fr); } }
       @media (min-width: 1024px) { .domains-grid { grid-template-columns: repeat(3, 1fr); } }
@@ -224,6 +270,8 @@
         border: 1px solid var(--v-color-ornament-primary);
         border-radius: var(--v-shape-default);
         display: flex; flex-direction: column; gap: var(--v-space-8);
+        height: 100%;
+        box-sizing: border-box;
         transition: border-color var(--v-transition-default);
       }
       .domain-card:hover { border-color: var(--v-color-foreground-primary); }
@@ -261,14 +309,16 @@
     <!-- HEADER -->
     <header class="site-header">
       <div class="container site-header-inner">
-        <a href="/" aria-label="Volvo Cars home"
+        <a href="/" aria-label="Storefront Graph home"
            style="display:inline-flex;align-items:center;text-decoration:none;">
-          <span class="wordmark"></span>
+          <img src="Images/storefront-graph-logotype-black.svg" alt="Storefront Graph" class="site-logotype" />
         </a>
         <nav aria-label="Main navigation">
           <ul class="site-header-nav">
-            <li><a href="#quick-start" class="link-plain micro font-medium">Quick Start</a></li>
-            <li><a href="#domains"     class="link-plain micro font-medium">Domains</a></li>
+            <li><a href="#quick-start" class="link-plain font-medium" style="font-size:16px;">Quick Start</a></li>
+            <li><a href="#domains"     class="link-plain font-medium" style="font-size:16px;">Domains</a></li>
+            <li><a href="https://explorer.volvocars.biz/docs" class="link-plain font-medium" style="font-size:16px;">Docs</a></li>
+            <li><a href="https://explorer.volvocars.biz/client-registry" class="link-plain font-medium" style="font-size:16px;">Client Registry</a></li>
             <li>
               <button id="theme-toggle" aria-label="Switch colour theme" title="Toggle light / dark mode">
                 <!-- Moon: visible in light mode → click to go dark -->
@@ -308,7 +358,7 @@
       <section class="hero-section" aria-labelledby="hero-heading">
         <div class="container-md">
           <div class="title-page">
-            <img src="storefront-graph-apple-touch-icon.png" alt="Storefront Graph" class="hero-icon" />
+            <img src="Images/storefront-graph-favicon.svg" alt="Storefront Graph" class="hero-icon" />
             <h1 id="hero-heading" slot="heading">Storefront Graph Portal</h1>
             <div slot="description" class="hero-description">
               <p>
@@ -340,7 +390,7 @@
           <ul class="cards-grid" role="list">
 
             <li class="text-card">
-              <img src="storefront_placeholder.png" alt="" class="card-thumb" slot="image" />
+              <img src="Images/Explore queries.png" alt="Explore queries" class="card-thumb" slot="image" />
               <h2 slot="title">Explore queries</h2>
               <p slot="subtitle">Browse the schema and run queries for quick iteration on features.</p>
               <div slot="action">
@@ -349,7 +399,7 @@
             </li>
 
             <li class="text-card">
-              <img src="storefront_placeholder.png" alt="" class="card-thumb" slot="image" />
+              <img src="Images/Read the Docs.png" alt="Read the docs" class="card-thumb" slot="image" />
               <h2 slot="title">Read the docs</h2>
               <p slot="subtitle">Get started, learn core concepts, and follow examples across data domains.</p>
               <div slot="action">
@@ -358,7 +408,7 @@
             </li>
 
             <li class="text-card">
-              <img src="storefront_placeholder.png" alt="" class="card-thumb" slot="image" />
+              <img src="Images/Register the clients.png" alt="Register your client" class="card-thumb" slot="image" />
               <h2 slot="title">Register your client</h2>
               <p slot="subtitle">You must register your application before you can make requests.</p>
               <div slot="action">
@@ -367,7 +417,7 @@
             </li>
 
             <li class="text-card">
-              <img src="storefront_placeholder.png" alt="" class="card-thumb" slot="image" />
+              <img src="Images/See live examples.png" alt="Try live examples" class="card-thumb" slot="image" />
               <h2 slot="title">Try live examples</h2>
               <p slot="subtitle">See working queries for common use-cases.</p>
               <div slot="action">
@@ -382,7 +432,7 @@
       <!-- QUICK START -->
       <section class="page-section" id="quick-start" aria-labelledby="quickstart-heading">
         <div class="container-md">
-          <div class="title-section section-heading">
+          <div class="title-section section-heading reveal">
             <h2 id="quickstart-heading" slot="heading">Quick Start</h2>
           </div>
 
@@ -482,10 +532,10 @@ HttpResponse&lt;String&gt; response =
       <!-- NEED HELP -->
       <section class="page-section" aria-labelledby="help-heading" data-color-mode="dark" style="background:#000;">
         <div class="container-md">
-          <div class="title-section section-heading">
+          <div class="title-section section-heading reveal">
             <h2 id="help-heading" slot="heading">Need help?</h2>
           </div>
-          <div class="callout">
+          <div class="callout reveal" data-reveal-delay="150">
             <ol class="list" style="padding-inline-start:1.5rem;">
               <li>Reproduce the issue with a minimal query in the Explorer</li>
               <li>Copy the link using the paper aeroplane icon &#9992;&#65039;</li>
@@ -502,7 +552,7 @@ HttpResponse&lt;String&gt; response =
       <!-- DATA & DOMAINS -->
       <section class="page-section" id="domains" aria-labelledby="domains-heading">
         <div class="container">
-          <div class="title-section section-heading">
+          <div class="title-section section-heading reveal">
             <h2 id="domains-heading" slot="heading">Data &amp; domains</h2>
             <p slot="description">
               The Storefront Graph uses Federated GraphQL architecture &#8212; one unified API,
@@ -630,6 +680,55 @@ HttpResponse&lt;String&gt; response =
             panel.removeAttribute('data-active');
           }
         });
+      }
+
+      function equalizeDomainCards() {
+        var cards = document.querySelectorAll('.domain-card');
+        cards.forEach(function(c) { c.style.minHeight = ''; });
+        var max = 0;
+        cards.forEach(function(c) { max = Math.max(max, c.offsetHeight); });
+        cards.forEach(function(c) { c.style.minHeight = max + 'px'; });
+      }
+      equalizeDomainCards();
+      window.addEventListener('resize', equalizeDomainCards);
+
+      // Progressive step reveal on scroll
+      var stepItems = document.querySelectorAll('.steps-list > li');
+      if ('IntersectionObserver' in window) {
+        var stepObserver = new IntersectionObserver(function(entries) {
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+              var el = entry.target;
+              var delay = parseInt(el.getAttribute('data-step-index') || 0) * 150;
+              setTimeout(function() { el.classList.add('step-visible'); }, delay);
+              stepObserver.unobserve(el);
+            }
+          });
+        }, { threshold: 0.15 });
+        stepItems.forEach(function(li, i) {
+          li.setAttribute('data-step-index', i);
+          stepObserver.observe(li);
+        });
+      } else {
+        stepItems.forEach(function(li) { li.classList.add('step-visible'); });
+      }
+
+      // General scroll reveal
+      var revealEls = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window) {
+        var revealObserver = new IntersectionObserver(function(entries) {
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+              var el = entry.target;
+              var delay = parseInt(el.getAttribute('data-reveal-delay') || 0);
+              setTimeout(function() { el.classList.add('reveal-visible'); }, delay);
+              revealObserver.unobserve(el);
+            }
+          });
+        }, { threshold: 0.1 });
+        revealEls.forEach(function(el) { revealObserver.observe(el); });
+      } else {
+        revealEls.forEach(function(el) { el.classList.add('reveal-visible'); });
       }
     </script>
 
